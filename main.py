@@ -97,28 +97,30 @@ def optimal_success_probabilities_from(success_probabilities: pandas.DataFrame) 
 def cleaning_for_plotting(success_probabilities: pandas.DataFrame) -> pandas.DataFrame:
     inner_success_probabilities = success_probabilities[success_probabilities['probability'] >= 0.025]
     inner_success_probabilities['dice_string'] = inner_success_probabilities['dice'].apply(dice_string_format_from)
-    inner_success_probabilities.loc[inner_success_probabilities['probability'] > 0.99, 'dice_string'] = 'any'
+    inner_success_probabilities.loc[inner_success_probabilities['probability'] > 0.99, 'dice_string'] = 'any 3d'
     return inner_success_probabilities
 
 
 def plot_from(success_probabilities: pandas.DataFrame):
     success_probabilities_clean = cleaning_for_plotting(success_probabilities)
 
-    figure = plt.figure(figsize=(20, 10))
+    figure = plt.figure(figsize=(15, 6))
     plot = seaborn.lineplot(x='pd',
                             y='probability',
                             data=success_probabilities_clean,
                             hue='difficulty',
                             marker='o',
-                            alpha=0.3)
+                            alpha=0.3,
+                            hue_order=['simple', 'normal', 'challenge', 'difficult', 'very difficult', 'extreme'])
     plot.set_xticks(range(3, 26))
-    plot.set_yticks(numpy.arange(0, 1, 0.1))
+    plot.set_yticks(numpy.arange(0, 1.1, 0.1))
+    plot.legend(bbox_to_anchor=(1.12, 1), loc='upper right', borderaxespad=0)
 
     for line in success_probabilities_clean.index:
         plot.text(success_probabilities_clean.pd[line], success_probabilities_clean.probability[line],
                   success_probabilities_clean.dice_string[line], horizontalalignment='center',
                   size='x-small', color='black')
-    plt.show()
+    figure.savefig('optimal_dice_strategy.svg')
 
 
 def compare_strategies(strategy_x: pandas.DataFrame, strategy_y: pandas.DataFrame) -> tuple[pandas.DataFrame, float]:
